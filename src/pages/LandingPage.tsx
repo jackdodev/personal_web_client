@@ -6,10 +6,11 @@ const LandingPage : React.FC = () => {
     const [projects, setProjects] = useState<Array<any>>([])
     const [loading, setLoading] = useState<boolean>(true);
 
+    console.log(import.meta.env.MODE)
     useEffect(() => {
         axios({
             method: 'GET',
-            url: 'http://localhost:8080/',
+            url: import.meta.env.BACKEND_SERVER_URL,
             responseType: 'stream'
         }).then(function (response) {
             console.log('Response received')
