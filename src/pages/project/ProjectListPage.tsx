@@ -7,7 +7,7 @@ const ProjectListPage: React.FC = () => {
     useEffect(() => {
         axios({
             method: 'GET',
-            url: import.meta.env.VITE_BACKEND_SERVER_URL+'/project',
+            url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/project',
             responseType: 'stream'
         }).then(function (response) {
             console.log('Response received')

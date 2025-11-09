@@ -7,7 +7,7 @@ const BlogListPage: React.FC = () => {
     useEffect(() => {
         axios({
             method: 'GET',
-            url: import.meta.env.VITE_BACKEND_SERVER_URL+'/blog',
+            url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog',
             responseType: 'stream'
         }).then(function (response) {
             console.log('Response received')
@@ -18,7 +18,6 @@ const BlogListPage: React.FC = () => {
         })
     }, [])
 
-    console.log(import.meta.env.REACT_APP_BACKEND_SERVER_URL)
     return (
         <div>
             <h1>Blog List Page</h1>
