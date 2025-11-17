@@ -6,15 +6,15 @@ const LandingPage : React.FC = () => {
     const [projects, setProjects] = useState<Array<any>>([])
     const [loading, setLoading] = useState<boolean>(true);
 
-    console.log(import.meta.env.MODE)
     useEffect(() => {
         axios({
             method: 'GET',
-            url: import.meta.env.BACKEND_SERVER_URL,
+            url: import.meta.env.REACT_APP_BACKEND_SERVER_URL,
             responseType: 'stream'
         }).then(function (response) {
             console.log('Response received')
             var resp = JSON.parse(response.data)
+            console.log('response', response)
             var newBlogs = [...posts, resp['blogs']]
             var newProjects = [...projects, resp['projects']]
             setPosts(newBlogs)
