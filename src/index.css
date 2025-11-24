@@ -25,7 +25,8 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
+  flex-direction: column;
+  align-items: stretch;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -65,4 +66,92 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* Desktop / PC support: make layout adapt for larger screens
+   - keep mobile-first behavior but switch to a more traditional page layout on wide viewports
+   - center a max-width container and increase typography for desktop
+*/
+/* Utility container for app content; used by #root or top-level wrappers */
+.container,
+#root {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1rem;
+  /* allow main content to grow and push footer to the bottom */
+  flex: 1 1 auto;
+}
+
+@media (min-width: 1024px) {
+  /* preserve column flow but give body desktop padding */
+  /* move page padding into the centered container so header/footer can be full-bleed */
+  body {
+    padding: 0;
+  }
+
+  /* constrain the main app area and center it; provide page padding here */
+  #root,
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 3rem;
+  }
+
+  /* on desktop the container top padding is 2rem, so negate it on the header so
+     the header starts flush with the viewport top */
+  header {
+    margin-top: calc(-1 * 2rem);
+  }
+
+  /* on desktop cancel container bottom padding so footer touches viewport bottom */
+  footer {
+    margin-bottom: calc(-1 * 2rem);
+  }
+
+  /* slightly larger headings on desktop */
+  h1 {
+    font-size: 4rem;
+  }
+
+  /* buttons a bit larger on desktop */
+  button {
+    padding: 0.75em 1.4em;
+    font-size: 1.05em;
+  }
+}
+
+/* make footer stick to bottom when content is short */
+footer {
+  width: 100%;
+  margin-top: auto;
+  /* pull footer down to cancel parent container bottom padding so it sits flush
+    with the viewport bottom */
+  margin-bottom: calc(-1 * 2rem);
+  /* make footer full-bleed horizontally regardless of parent padding
+    - keeps inner container centered while background stretches edge-to-edge */
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
+/* make header full-bleed and start at the very top */
+header {
+  /* Make header full-bleed and pinned to the very top of the viewport */
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999; /* ensure it stays above other elements */
+  width: 100vw;
+  /* offset so the element's background spans the viewport while its inner content
+     (max-w-7xl) remains centered by its own margins */
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  box-sizing: border-box;
+  /* pull header up to negate parent container top padding so it starts at viewport top */
+  margin-top: calc(-1 * 2rem);
 }

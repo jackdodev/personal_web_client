@@ -27,7 +27,7 @@ const LandingPage : React.FC = () => {
     return (
         <div className="text-secondary bg-[#f7f9fb] min-h-screen">
             <Header />
-           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
                 {/* Blog Posts Section (Minimized List View) */}
                 <section id="blog" className="mb-20">
                     <h2 className="text-3xl font-bold text-secondary mb-8 pb-3 border-b-2 border-primary">
@@ -101,20 +101,6 @@ const LandingPage : React.FC = () => {
                     </div>
                 </section>
             </main>
-            {/* <h1>Landing page</h1>
-            { loading && <p>Loading...</p> }
-            { !loading && posts.map((post, index) => (
-                <div key={index}> 
-                    <h2>Post {index + 1}</h2>
-                    <p>{JSON.stringify(post)}</p>
-                </div>
-            )) }
-            { !loading && projects.map((project, index) => (
-                <div key={index}>
-                    <h2>Project {index + 1}</h2> 
-                    <p>{JSON.stringify(project)}</p>
-                </div>
-            ))} */}
             <Footer />
         </div>
     )

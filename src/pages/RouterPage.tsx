@@ -5,14 +5,11 @@ import BlogDetailPage from './blog/BlogDetailPage'
 import ProjectListPage from './project/ProjectListPage'
 import ProjectDetailPage from './project/ProjectDetailPage'
 import LandingPage from './LandingPage'
-import NavigationHeaderMenu from './NavigationHeaderMenu'
 
 const RouterPage : React.FC = () => {
     return (
         <div>
-            <h1>Router  page</h1>
             <BrowserRouter>
-                <NavigationHeaderMenu />
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/blog">
