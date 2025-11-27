@@ -25,9 +25,9 @@ const LandingPage : React.FC = () => {
     }, [])
 
     return (
-        <div className="text-secondary bg-[#f7f9fb] min-h-screen">
+        <div className="text-secondary bg-[#f7f9fb] min-h-screen flex flex-col">
             <Header />
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+            <main className="flex-1 flex-1 max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-20">
                 {/* Blog Posts Section (Minimized List View) */}
                 <section id="blog" className="mb-20">
                     <h2 className="text-3xl font-bold text-secondary mb-8 pb-3 border-b-2 border-primary">
@@ -38,7 +38,7 @@ const LandingPage : React.FC = () => {
                         {posts.map((post) => (
                         <a 
                             key={post.blog_id} 
-                            // href={post.href} 
+                            href={'/blog/'+post.blog_id} 
                             className="block bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-l-4 border-accent hover:border-primary"
                         >
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -47,17 +47,19 @@ const LandingPage : React.FC = () => {
                                         {post.subject}
                                     </h3>
                                 </div>
-                                {/* <div className="text-sm text-gray-400 flex-shrink-0">
-                                    <span className="font-medium text-primary mr-2">#{post.tags[0]}</span>
-                                    <span>{post.date}</span>
-                                </div> */}
+                                <div className="flex items-center space-x-3 text-sm text-gray-400 flex-shrink-0">
+                                    <div className="flex items-center space-x-2">
+                                        <span className="font-medium text-primary">#tag</span>
+                                        <span>{post.date}</span>
+                                    </div>
+                                </div>
                             </div>
                         </a>
                         ))}
                     </div>
 
                     <div className="mt-8 text-center">
-                        <a href="#" className="inline-block px-6 py-3 bg-white text-primary border-2 border-primary font-semibold rounded-lg shadow-md hover:bg-indigo-50 transition duration-300">
+                        <a href="/blog" className="inline-block px-6 py-3 bg-white text-primary border-2 border-primary font-semibold rounded-lg shadow-md hover:bg-indigo-50 transition duration-300">
                             View All Posts &rarr;
                         </a>
                     </div>
@@ -73,7 +75,7 @@ const LandingPage : React.FC = () => {
                         {projects.map((project) => (
                         <a 
                             key={project.project_id} 
-                            // href={project.href} 
+                            href={'/project/'+project.project_id} 
                             className="block bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-l-4 border-primary hover:border-accent"
                         >
                             <div className="flex flex-col md:flex-row justify-between items-start">
@@ -81,13 +83,12 @@ const LandingPage : React.FC = () => {
                                     <h3 className="text-xl font-bold text-secondary mb-1">
                                         {project.name}
                                     </h3>
-                                    {/* <div className="text-sm space-x-2">
-                                    {project.techStack.map((tech) => (
-                                        <span key={tech.name} className={`${tech.bgColor} ${tech.textColor} px-3 py-1 rounded-full font-medium inline-block`}>
-                                        {tech.name}
-                                        </span>
-                                    ))}
-                                    </div> */}
+                                </div>
+                                <div className="flex items-center space-x-3 text-sm text-gray-400 flex-shrink-0">
+                                    <div className="flex items-center space-x-2">
+                                        <span className="font-medium text-primary">#tag</span>
+                                        <span>{project.date}</span>
+                                    </div>
                                 </div>
                             </div>
                         </a>
@@ -95,7 +96,7 @@ const LandingPage : React.FC = () => {
                     </div>
 
                     <div className="mt-8 text-center">
-                        <a href="#" className="inline-block px-6 py-3 bg-white text-primary border-2 border-primary font-semibold rounded-lg shadow-md hover:bg-indigo-50 transition duration-300">
+                        <a href="/project" className="inline-block px-6 py-3 bg-white text-primary border-2 border-primary font-semibold rounded-lg shadow-md hover:bg-indigo-50 transition duration-300">
                             View All Projects &rarr;
                         </a>
                     </div>
