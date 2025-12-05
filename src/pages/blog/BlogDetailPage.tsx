@@ -11,7 +11,7 @@ import {dark} from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 const BlogDetailPage: React.FC = () => {
     const { blogId } = useParams();
-        const markdown = `## Here is some **JavaScript** code:
+    const markdown = `### Here is some **JavaScript** code:
 
 ~~~js
 const aJsVariable = "Test";
@@ -51,12 +51,15 @@ there is \`inline code\` as well.
                                     </SyntaxHighlighter>
                                 ) : (
                                     <code {...rest} className={className}>
-                                        {children}
+                                        <b>{children}</b>
                                     </code>
                                 );
                             },
                             h2({children, ...props}: any) {
                                 return <h2 {...props} className="text-3xl text-600 mt-8 mb-4">{children}</h2>
+                            },
+                            h3({children, ...props}: any) {
+                                return <h3 {...props} className="text-2xl text-600 mt-6 mb-3">{children}</h3>
                             },
                             // ensure lists render correctly with Tailwind
                             ul({children, ...props}: any) {
@@ -68,7 +71,7 @@ there is \`inline code\` as well.
                             },
                             li({children, ...props}: any) {
                                 return <li {...props} className="mb-1">{children}</li>
-                            }
+                            },
                         }}
                     >
                         {markdown}

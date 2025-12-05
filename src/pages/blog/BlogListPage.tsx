@@ -47,7 +47,9 @@ const BlogListPage: React.FC = () => {
                                 </div>
                                 <div className="flex items-center space-x-3 text-sm text-gray-400 flex-shrink-0">
                                     <div className="flex items-center space-x-2">
-                                        <span className="font-medium text-primary">#tag</span>
+                                        {post.tags.map((tag: string) => (
+                                            <span className="font-medium text-primary">#{tag}</span>
+                                        ))}
                                         <span>{post.date}</span>
                                     </div>
                                     <button
