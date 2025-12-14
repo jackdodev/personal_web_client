@@ -2,13 +2,20 @@ import { useState } from 'react'
 import Header from '../Header';
 import Footer from '../Footer';
 import MDEditor from '@uiw/react-md-editor';
+import { uploadFile } from '../../service/FileUploadService';
 
 export default function BlogEditPage() {
   const [value, setValue] = useState("**Hello World!!!**");
   const [title, setTitle] = useState('My Application Title');
+  const [loading, setLoading] = useState<boolean>(true)
 
-  const saveNewBlog = () => {
+
+  const saveNewBlog = async () => {
     console.log("Saving blog...", title, value);
+
+    setLoading(true);
+    await uploadFile(title, value);
+    setLoading(false);
   }
 
   return (
