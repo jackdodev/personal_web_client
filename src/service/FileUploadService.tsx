@@ -13,17 +13,16 @@ export async function uploadFile(title: string, value: string): Promise<string> 
     }
   })
 
-  const {link, key} = response.data
-  console.log('Upload link received:', link, key)
+  const {upload_url, key} = response.data
+  console.log('Upload link received:', upload_url, key)
 
-  // var uploaded = await axios({
-  //   method: 'PUT',
-  //   url: link,
-  //   headers: {
-  //     'Content-Type': 'application/octet-stream'
-  //   },
-  // })
+  var uploaded = await axios.put(upload_url, value, {
+    headers: {
+      'Content-Type': 'text/plain'
+    },
+  }).catch((error) => {
+    console.error('Error uploading file:', error)
+  })
 
-  // return uploaded.statusText
-  return link;
+  return ''
 }
