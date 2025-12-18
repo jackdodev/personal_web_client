@@ -1,28 +1,19 @@
 import axios from 'axios';
 
 // TODO: Complete implementation
-export async function uploadFile(title: string, value: string): Promise<string> {
+export async function uploadFile(key: string, value: string): Promise<string> {
   var response = await axios({
     method: 'POST',
     url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/upload-link',
     responseType: 'json',
     data: {
-      id: 'id',
-      author_id: 'author_id',
+      key: key,
       content: value
     }
   })
 
-  const {upload_url, key} = response.data
-  console.log('Upload link received:', upload_url, key)
+  const {upload_url} = response.data
+  console.log('Upload link received:', upload_url)
 
-  var uploaded = await axios.put(upload_url, value, {
-    headers: {
-      'Content-Type': 'text/plain'
-    },
-  }).catch((error) => {
-    console.error('Error uploading file:', error)
-  })
-
-  return ''
+  return upload_url
 }

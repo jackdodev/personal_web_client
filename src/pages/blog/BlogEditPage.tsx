@@ -4,7 +4,14 @@ import Footer from '../Footer';
 import MDEditor from '@uiw/react-md-editor';
 import { uploadFile } from '../../service/FileUploadService';
 
-export default function BlogEditPage() {
+import { v4 as uuidv4, parse as uuidParse } from 'uuid';
+import axios from 'axios';
+
+type UserContextType = {
+  userId: string;
+};
+
+export default function BlogEditPage({ userId = "sokin1" }: UserContextType) {
   const [value, setValue] = useState("**Hello World!!!**");
   const [title, setTitle] = useState('My Application Title');
   const [loading, setLoading] = useState<boolean>(true)
@@ -13,8 +20,68 @@ export default function BlogEditPage() {
   const saveNewBlog = async () => {
     console.log("Saving blog...", title, value);
 
+    // assign new blog id
+    const u = uuidv4();
+    const bytes = uuidParse(u);
+    const bId = toUrlSafeBase64(Buffer.from(bytes).toString('base64'));``
+
+    // build key for upload file
+    const key = `blog/${bId}/${userId}`;
+
     setLoading(true);
-    await uploadFile(title, value);
+    // create new blog entry
+    var resp = await axios({
+      method: 'POST',
+      url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/new',
+      responseType: 'json',
+      data: {
+        id: bId,
+        key: key,
+        author_id: userId,
+        subject: title,
+        tags: [],
+      }
+    })
+
+    if (resp.status !== 200) {
+      console.error('Error creating new blog entry:', resp);
+      setLoading(false);
+      return;
+    }
+    
+    const upload_link = await uploadFile(key, value);
+    if (upload_link === '') {
+      axios({
+        method: 'DELETE',
+        url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/delete',
+        responseType: 'json',
+        data: {
+          id: bId,
+        }
+      })
+      setLoading(false);
+      return;
+    }
+
+    await axios.put(upload_link, value, {
+      headers: {
+        'Content-Type': 'text/plain'
+      },
+    }).catch((error) => {
+      console.error('Error uploading file:', error)
+      // on upload error, delete the blog entry
+      axios({
+        method: 'DELETE',
+        url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/delete',
+        responseType: 'json',
+        data: {
+          id: bId,
+        }
+      }).finally(() => {
+        setLoading(false);
+      });
+    });
+
     setLoading(false);
   }
 
@@ -66,4 +133,8 @@ export default function BlogEditPage() {
       <Footer />
     </div>
   )
+}
+
+function toUrlSafeBase64(base64: string): string {
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
