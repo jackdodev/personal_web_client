@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Header from '../Header';
 import Footer from '../Footer';
 import MDEditor from '@uiw/react-md-editor';
-import { uploadFile } from '../../service/FileUploadService';
+import { getUploadLink } from '../../service/FileUploadService';
 
 import { v4 as uuidv4, parse as uuidParse } from 'uuid';
 import axios from 'axios';
@@ -23,33 +23,31 @@ export default function BlogEditPage({ userId = "sokin1" }: UserContextType) {
     // assign new blog id
     const u = uuidv4();
     const bytes = uuidParse(u);
-    const bId = toUrlSafeBase64(Buffer.from(bytes).toString('base64'));``
+    const bId = toUrlSafeBase64(btoa(String.fromCharCode(...bytes)));
 
     // build key for upload file
-    const key = `blog/${bId}/${userId}`;
+    const key = `blog/${userId}:${bId}`;
 
     setLoading(true);
-    // create new blog entry
+    // create new blog entry 
     var resp = await axios({
       method: 'POST',
-      url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/new',
+      url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/new/'+bId,
       responseType: 'json',
       data: {
-        id: bId,
-        key: key,
         author_id: userId,
         subject: title,
         tags: [],
       }
     })
 
-    if (resp.status !== 200) {
+    if (resp.status !== 201) {
       console.error('Error creating new blog entry:', resp);
       setLoading(false);
       return;
     }
     
-    const upload_link = await uploadFile(key, value);
+    const upload_link = await getUploadLink(key);
     if (upload_link === '') {
       axios({
         method: 'DELETE',
