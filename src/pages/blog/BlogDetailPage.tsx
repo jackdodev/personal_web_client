@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router'
 import Header from '../Header';
 import Footer from '../Footer';
@@ -7,30 +7,56 @@ import remarkGfm from 'remark-gfm';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
 import {dark} from 'react-syntax-highlighter/dist/esm/styles/prism'
 
+import axios from 'axios';
+
 // We render markdown as raw text (no HTML rendering)
 
 const BlogDetailPage: React.FC = () => {
+    const [post, setPost] = useState<Array<any>>([])
+    const [markdown, setMarkdown] = useState<string>(`No content available.`);
     const { blogId } = useParams();
-    const markdown = `### Here is some **JavaScript** code:
-
-~~~js
-const aJsVariable = "Test";
-
-console.log(aJsVariable);
-~~~
-
-there is \`inline code\` as well.
-- list item 1
-- list item 2
-  - nested item
-  - nested item 2
-    1. nested numbered item
-    2. nested numbered item 2
-`;
 
     useEffect(() => {
         // Fetch blog details using blogId
-        }, [blogId])
+        console.log('Fetching blog details for ID:', blogId);
+        axios({
+            method: 'GET',
+            url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/'+blogId,
+            responseType: 'json',
+        }).then((response) => {
+            if (response.status === 200) {
+                setPost(response.data);
+
+                console.log(response.data);
+                var bucket_key = `blog/${response.data.author_id}:${response.data.blog_id}`
+                axios({
+                    method: 'POST',
+                    url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/download-link',
+                    responseType: 'json',
+                    data: {
+                        key: bucket_key,
+                    }
+                }).then((resp) => {
+                    if (resp.status === 200) {
+                        const download_url = resp.data.download_url;
+                        axios.get(download_url+`/key=${bucket_key}`).then((mdResp) => {
+                            if (mdResp.status === 200) {
+                                setMarkdown(mdResp.data);
+                            } else {
+                                console.error('Error fetching markdown content:', mdResp);
+                            }
+                        })
+                    } else {
+                        console.error('Error fetching download link:', resp);
+                    }
+                }).catch((error) => {
+                    console.error('Error fetching download link:', error);
+                });
+            } else {
+                console.error('Error fetching blog details:', response);
+            }
+        })
+    }, [blogId])
 
     return (
         <div className="text-secondary bg-[#f7f9fb] min-h-screen flex flex-col">
