@@ -2,13 +2,84 @@ import { useState } from 'react'
 import Header from '../Header';
 import Footer from '../Footer';
 import MDEditor from '@uiw/react-md-editor';
+import { getUploadLink } from '../../service/FileUploadService';
 
-export default function ProjectEditPage() {
+import { v4 as uuidv4, parse as uuidParse } from 'uuid';
+import axios from 'axios';
+
+type UserContextType = {
+  userId: string;
+}
+
+export default function ProjectEditPage({ userId = "sokin1" }: UserContextType) {
   const [value, setValue] = useState("**Hello World!!!**");
   const [title, setTitle] = useState('My Application Title');
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const saveNewProject = () => {
+  const saveNewProject = async () => {
     console.log("Saving project...", title, value);
+
+    // assign new project id
+    const u = uuidv4();
+    const bytes = uuidParse(u);
+    const pId = toUrlSafeBase64(btoa(String.fromCharCode(...bytes)));
+
+    // build key for upload file
+    const key = `project/${userId}:${pId}`;
+
+    setLoading(true);
+    // create new project entry
+    var resp = await axios({
+      method: 'POST',
+      url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/project/new/'+pId,
+      responseType: 'json',
+      data: {
+        author_id: userId,
+        subject: title,
+        tags: [],
+      }
+    })
+
+    if (resp.status !== 201) {
+      console.error('Error creating new project entry:', resp);
+      setLoading(false);
+      return;
+    }
+
+    const upload_link = await getUploadLink(key);
+    if (upload_link === '') {
+      axios({
+        method: 'DELETE',
+        url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/project/delete',
+        responseType: 'json',
+        data: {
+          id: pId,
+        }
+      })
+      setLoading(false);
+      return;
+    }
+
+    await axios.put(upload_link, value, {
+      headers: {
+        'Content-Type': 'text/markdown',
+      },
+    }).catch((error) => {
+      console.error('Error uploading file:', error)
+      // on upload error, delete the blog entry
+      axios({
+        method: 'DELETE',
+        url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/project/delete',
+        responseType: 'json',
+        data: {
+          id: pId,
+        }
+      }).finally(() => {
+        setLoading(false);
+      });
+    });
+
+    setLoading(false);
   }
 
   return (
@@ -59,4 +130,8 @@ export default function ProjectEditPage() {
       <Footer />
     </div>
   )
+}
+
+function toUrlSafeBase64(base64: string): string {
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }

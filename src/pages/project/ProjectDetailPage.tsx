@@ -5,29 +5,40 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
 import {dark} from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import axios, { HttpStatusCode } from 'axios';
+
+import { getDownloadLink, downloadContent } from '../../service/FileUploadService';
 
 const ProjectDetailPage: React.FC = () => {
+    const [project, setProject] = useState<any>(null);
+    const [markdown, setMarkdown] = useState<string>(`No content available.`);
     const { projectId } = useParams();
-    const markdown = `### Here is some **JavaScript** code:
-
-~~~js
-const aJsVariable = "Test";
-
-console.log(aJsVariable);
-~~~
-
-there is \`inline code\` as well.
-- list item 1
-- list item 2
-  - nested item
-  - nested item 2
-    1. nested numbered item
-    2. nested numbered item 2
-`;
+    
 
     useEffect(() => {
         // Fetch project details using projectId
+        console.log('Fetching project details for ID:', projectId);
+        axios({
+            method: 'GET',
+            url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/project/'+projectId,
+            responseType: 'json',
+        }).then((response) => {
+            if (response.status !== HttpStatusCode.Ok) {
+                throw new Error('Error fetching project details, ' + response.statusText);
+            }
+
+            var bucket_key = `project/${response.data.author_id}:${projectId}`
+            const download_context = async () => {
+                const download_url = await getDownloadLink(bucket_key);
+                const content = await downloadContent(download_url);
+
+                setProject(response.data);
+                setMarkdown(content);
+            }
+
+            download_context();
+        })
     }, [projectId])
 
     return (
@@ -35,6 +46,10 @@ there is \`inline code\` as well.
             <Header />
             <main className="flex-1">
                 <div className="mx-auto max-w-3xl p-6 prose prose-h1:text-4xl prose-h1:text-blue-600 prose-p:text-lg prose-code:bg-gray-200 lg:prose-xl">
+                    <div>
+                        created at : {project && project['created_at']}
+                    </div>
+                    <div><h1><b>{project && project['subject']}</b></h1></div>
                     <Markdown
                         remarkPlugins={[remarkGfm]}
                         components={{

@@ -63,7 +63,7 @@ export default function BlogEditPage({ userId = "sokin1" }: UserContextType) {
 
     await axios.put(upload_link, value, {
       headers: {
-        'Content-Type': 'text/plain'
+        'Content-Type': 'text/markdown'
       },
     }).catch((error) => {
       console.error('Error uploading file:', error)
