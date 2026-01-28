@@ -7,12 +7,11 @@ import remarkGfm from 'remark-gfm';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
 import {dark} from 'react-syntax-highlighter/dist/esm/styles/prism'
 
-import axios from 'axios';
-
-// We render markdown as raw text (no HTML rendering)
+import axios, { HttpStatusCode } from 'axios';
+import { getDownloadLink, downloadContent } from '../../service/FileUploadService';
 
 const BlogDetailPage: React.FC = () => {
-    const [post, setPost] = useState<Array<any>>([])
+    const [post, setPost] = useState<any>(null)
     const [markdown, setMarkdown] = useState<string>(`No content available.`);
     const { blogId } = useParams();
 
@@ -24,37 +23,20 @@ const BlogDetailPage: React.FC = () => {
             url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/'+blogId,
             responseType: 'json',
         }).then((response) => {
-            if (response.status === 200) {
-                setPost(response.data);
-
-                console.log(response.data);
-                var bucket_key = `blog/${response.data.author_id}:${response.data.blog_id}`
-                axios({
-                    method: 'POST',
-                    url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/download-link',
-                    responseType: 'json',
-                    data: {
-                        key: bucket_key,
-                    }
-                }).then((resp) => {
-                    if (resp.status === 200) {
-                        const download_url = resp.data.download_url;
-                        axios.get(download_url+`/key=${bucket_key}`).then((mdResp) => {
-                            if (mdResp.status === 200) {
-                                setMarkdown(mdResp.data);
-                            } else {
-                                console.error('Error fetching markdown content:', mdResp);
-                            }
-                        })
-                    } else {
-                        console.error('Error fetching download link:', resp);
-                    }
-                }).catch((error) => {
-                    console.error('Error fetching download link:', error);
-                });
-            } else {
-                console.error('Error fetching blog details:', response);
+            if (response.status !== HttpStatusCode.Ok) {
+                throw new Error('Error fetching blog details, ' + response.statusText);
             }
+
+            var bucket_key = `blog/${response.data.author_id}:${blogId}`
+            const download_context = async () => {
+                const download_url = await getDownloadLink(bucket_key);
+                const content = await downloadContent(download_url);
+
+                setPost(response.data);
+                setMarkdown(content);
+            }
+
+            download_context();
         })
     }, [blogId])
 
@@ -63,6 +45,10 @@ const BlogDetailPage: React.FC = () => {
             <Header />
             <main className="flex-1">
                 <div className="mx-auto max-w-3xl p-6 prose prose-h1:text-4xl prose-h1:text-blue-600 prose-p:text-lg prose-code:bg-gray-200 lg:prose-xl">
+                    <div>
+                        created at : {post && post['created_at']}
+                    </div>
+                    <div><h1><b>{post && post['subject']}</b></h1></div>
                     <Markdown
                         remarkPlugins={[remarkGfm]}
                         components={{
