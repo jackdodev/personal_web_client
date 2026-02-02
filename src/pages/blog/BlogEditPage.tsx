@@ -4,8 +4,10 @@ import Footer from '../Footer';
 import MDEditor from '@uiw/react-md-editor';
 import { getUploadLink } from '../../service/FileUploadService';
 
-import { v4 as uuidv4, parse as uuidParse } from 'uuid';
+
 import axios from 'axios';
+
+import { createNewPost } from '../../service/PostService';
 
 type UserContextType = {
   userId: string;
@@ -18,67 +20,13 @@ export default function BlogEditPage({ userId = "sokin1" }: UserContextType) {
 
 
   const saveNewBlog = async () => {
-    console.log("Saving blog...", title, value);
-
-    // assign new blog id
-    const u = uuidv4();
-    const bytes = uuidParse(u);
-    const bId = toUrlSafeBase64(btoa(String.fromCharCode(...bytes)));
-
-    // build key for upload file
-    const key = `blog/${userId}:${bId}`;
-
     setLoading(true);
-    // create new blog entry 
-    var resp = await axios({
-      method: 'POST',
-      url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/new/'+bId,
-      responseType: 'json',
-      data: {
-        author_id: userId,
-        subject: title,
-        tags: [],
-      }
+
+    createNewPost({
+      author_id: userId,
+      subject: title,
+      tags: [],
     })
-
-    if (resp.status !== 201) {
-      console.error('Error creating new blog entry:', resp);
-      setLoading(false);
-      return;
-    }
-    
-    const upload_link = await getUploadLink(key);
-    if (upload_link === '') {
-      axios({
-        method: 'DELETE',
-        url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/delete',
-        responseType: 'json',
-        data: {
-          id: bId,
-        }
-      })
-      setLoading(false);
-      return;
-    }
-
-    await axios.put(upload_link, value, {
-      headers: {
-        'Content-Type': 'text/markdown'
-      },
-    }).catch((error) => {
-      console.error('Error uploading file:', error)
-      // on upload error, delete the blog entry
-      axios({
-        method: 'DELETE',
-        url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/delete',
-        responseType: 'json',
-        data: {
-          id: bId,
-        }
-      }).finally(() => {
-        setLoading(false);
-      });
-    });
 
     setLoading(false);
   }
