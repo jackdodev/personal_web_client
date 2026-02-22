@@ -1,5 +1,5 @@
-import type { NewPostRequest } from "../types";
+import type { PostItem } from "../types";
 
-export function validatePost(post: NewPostRequest): boolean {
+export function validateContext(post: PostItem): boolean {
   return true;
 }

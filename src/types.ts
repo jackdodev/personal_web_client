@@ -3,22 +3,42 @@ export interface PostItem {
   id: string;
   postType: PostType;
   title: string;
-  AuthorId: string;
-  content: string;
-  Tags?: string[];
-  CreatedAt?: Date;
-  UpdatedAt?: Date;
+  authorId: string;
+  tags?: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export interface NewPostResponse {
+export interface NewPostRequest {
+  postType: PostType;
+  title: string;
+  authorId: string;
+  content: string;
+  tags?: string[],
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface CreatePostResponse {
   success: boolean;
   postId?: string;
   error?: string;
 }
 
-export interface LoadPostResponse {
+export interface LoadPostsResponse {
+  success: boolean;
+  posts?: PostItem[];
+  error?: string;
+}
+
+export interface LoadPostDetailResponse {
   success: boolean;
   post?: PostItem;
+  error?: string;
+}
+
+export interface DeletePostResponse {
+  success: boolean;
   error?: string;
 }
 
