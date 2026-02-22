@@ -2,12 +2,9 @@ import { useState } from 'react'
 import Header from '../Header';
 import Footer from '../Footer';
 import MDEditor from '@uiw/react-md-editor';
-import { getUploadLink } from '../../service/FileUploadService';
-
-
-import axios from 'axios';
 
 import { createNewPost } from '../../service/PostService';
+import type { NewPostRequest } from '../../types';
 
 type UserContextType = {
   userId: string;
@@ -17,18 +14,27 @@ export default function BlogEditPage({ userId = "sokin1" }: UserContextType) {
   const [value, setValue] = useState("**Hello World!!!**");
   const [title, setTitle] = useState('My Application Title');
   const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null);
 
 
   const saveNewBlog = async () => {
     setLoading(true);
 
-    createNewPost({
-      author_id: userId,
-      subject: title,
+    const newPostRequest: NewPostRequest = {
+      postType: "blog",
+      title: title,
+      authorId: userId,
+      content: value,
       tags: [],
-    })
+    }
+
+    const response = await createNewPost(newPostRequest);
 
     setLoading(false);
+    if (!response.success) {
+      setError(response.error || 'Unknown error occurred while creating post');
+      return;
+    }
   }
 
   return (
