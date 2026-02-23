@@ -1,6 +1,6 @@
 import type { NewPostRequest, CreatePostResponse, LoadPostsResponse, LoadPostDetailResponse, DeletePostResponse } from "../types";
 
-import { getUploadLink } from './FileUploadService';
+import { getDownloadLink, getUploadLink, downloadContent, uploadContext } from './FileUploadService';
 import { validateContext } from './AuthService';
 import { generateId } from '../utils/crypto';
 
@@ -35,7 +35,7 @@ export async function loadAllPost(): Promise<LoadPostsResponse> {
 
   try {
     const posts = await doLoadAllPost();
-    return { success: true, posts: posts };
+    return { success: true, posts: convertToPostItems(posts) };
   } catch (error) {
     console.error('[PostService] Error loading posts:', error);
     return { success: false, error: 'Error loading posts' };
@@ -47,12 +47,12 @@ export async function loadPostDetail(postId: string): Promise<LoadPostDetailResp
     validateContext(null as any);
   } catch (error) {
     console.error('[PostService] Post validation failed:', error);
-    return { success: false, error: 'Post validation failed', post: null as any, content: '' };
+    return { success: false, error: 'Post validation failed'};
   }
 
   try {
     const { post, content } = await doLoadPostDetail(postId);
-    return {success: true, post: post, content: content };
+    return {success: true, post: convertToPostItem(post), content: content };
   } catch (error) {
     console.error('[PostService] Error loading post detail:', error);
     return { success: false, error: 'Error loading post detail'};
@@ -76,26 +76,56 @@ export async function deletePost(postId: string): Promise<DeletePostResponse> {
   }
 }
 
-async function doLoadAllPost(): Promise<void> {
-
-}
-
-async function doLoadPostDetail(postId: string): Promise<void> {
-  axios({
-      method: 'GET',
-      url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/post',
-      responseType: 'stream'
+async function doLoadAllPost(): Promise<any> {
+  await axios({
+    method: 'GET',
+    url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/post',
+    responseType: 'json'
   }).then(function (response) {
-      var resp = JSON.parse(response.data)
-      var newBlogs = [...posts, ...resp]
-  }).finally(() => {
+    if (response.status !== 200) {
+      console.error('[PostService] Error loading posts:', response);
+      throw new Error('Failed to load posts');
+    }
+
+    var resp = JSON.parse(response.data);
+    return resp;
   })
 }
 
+async function doLoadPostDetail(postId: string): Promise<{ post: any, content: string }> {
+  axios({
+      method: 'GET',
+      url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/post/'+postId,
+      responseType: 'stream'
+  }).then(async function (response) {
+    if (response.status !== 200) {
+      console.error('[PostService] Error loading post detail:', response);
+      throw new Error('Failed to load post detail');
+    }
+    
+    var resp = JSON.parse(response.data)
+    const bucket_key = `${resp.post_type}/${resp.author_id}:${postId}`;
+
+    const download_link = await getDownloadLink(bucket_key);
+    if (download_link === '') {
+      throw new Error('Failed to get download link');
+    }
+
+    const content = await downloadContent(download_link);
+    return { post: resp, content: content };
+  }).catch((error) => {
+    console.error('[PostService] Error loading post detail:', error);
+    throw error;
+  })
+
+  return { post: null as any, content: '' };
+}
+
 async function doCreatePost(postId: string, newPostRequest: NewPostRequest): Promise<void> {
-  var resp = await axios({
+  try {
+    var resp = await axios({
       method: 'PUT',
-      url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/'+postId,
+      url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/post/'+postId,
       responseType: 'json',
       data: newPostRequest
     })
@@ -112,22 +142,20 @@ async function doCreatePost(postId: string, newPostRequest: NewPostRequest): Pro
       throw new Error('Failed to get upload link');
     }
 
-    await axios.put(upload_link, newPostRequest.content, {
-      headers: {
-        'Content-Type': 'text/markdown'
-      },
-    }).catch((error) => {
-      console.error('[PostService] Error uploading file:', error);
-      throw error;
-    });
+    await uploadContext(upload_link, newPostRequest.content);
+  } catch (error) {
+    console.error('[PostService] Error creating new post:', error);
+    throw error;
+  }
 }
 
 function doDeletePost(postId: string) {
   axios({
     method: 'DELETE',
-    url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/blog/'+postId,
+    url: import.meta.env.REACT_APP_BACKEND_SERVER_URL+'/post/'+postId,
     responseType: 'json',
   }).catch((error) => {
     console.error('[PostService] Error deleting post during cleanup:', error);
+    throw error;
   });
 }

@@ -43,3 +43,14 @@ export async function downloadContent(download_url: string): Promise<string> {
 
   return response.data
 }
+
+export async function uploadContext(upload_url: string, content: string): Promise<void> {
+  await axios.put(upload_url, content, {
+    headers: {
+      'Content-Type': 'text/markdown'
+    },
+  }).catch((error) => {
+    console.error('[PostService] Error uploading file:', error);
+    throw error;
+  });
+}

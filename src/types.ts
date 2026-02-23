@@ -35,6 +35,7 @@ export interface LoadPostDetailResponse {
   success: boolean;
   post?: PostItem;
   error?: string;
+  content?: string;
 }
 
 export interface DeletePostResponse {
